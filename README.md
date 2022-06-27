@@ -93,7 +93,7 @@ lerna create packages-name #packages-name 要添加的 package 名字
 #### 添加 `packages` 内的依赖
 
 ```bash
-lerna add lodash --scope=utils #添加 lodash 到 utils
+lerna add lodash --scope=qs #添加 lodash 到 qs
 ```
 
 注意 `lerna add` 只能一个一个依赖添加，`--scope=` 不指定则全部都添加

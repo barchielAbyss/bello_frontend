@@ -1,6 +1,6 @@
 {
   "name": "@belloai/moment",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "moment 的常用工具",
   "keywords": [
     "moment"

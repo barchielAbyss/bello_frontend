@@ -48,3 +48,21 @@ export const getFromNowString = (time: MomentInput): string => {
 }
 
 export const orgMoment = moment
+
+export const transformYears = start => {
+  const years = moment().diff(moment(start), 'years')
+  return years < 1 ? '' : `${years}`
+}
+
+export const transformDateYM = (start, end) => {
+  if (!start || !end) return null
+  const startDate = moment(new Date(start))
+  const endDate = moment(new Date(end))
+  const startMonths = startDate.year() * 12 + startDate.month()
+  const endMonths = endDate.year() * 12 + endDate.month()
+  const years = Number.parseInt(`${(endMonths - startMonths) / 12}`, 10)
+  const months = (endMonths - startMonths) % 12
+  if (!years && !months) return null
+  if (months === 0) return `${years}年`
+  return (years > 0 ? `${years}年` : '') + (months > 0 ? `${months}个月` : '')
+}

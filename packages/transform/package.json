@@ -1,6 +1,6 @@
 {
   "name": "@belloai/transform",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "api 数据转组件用到的数据体",
   "keywords": [
     "Local",
@@ -38,8 +38,8 @@
     "url": "https://github.com/threfo/bello_frontend/issues"
   },
   "dependencies": {
-    "lodash": "^4.17.21",
-    "@belloai/moment": "^0.0.1"
+    "@belloai/moment": "^0.0.2",
+    "lodash": "^4.17.21"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.176"

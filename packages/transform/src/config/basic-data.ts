@@ -8,6 +8,11 @@ export const SCHOOL_TYPES = {
   6: '职业教育',
   7: '培训机构'
 }
+export enum GAIN_WAY_MAP {
+  delivery = '主动投递',
+  search = '主动搜索'
+}
+
 export enum CHANNEL_MAPS {
   ciwei = '刺猬实习',
   fast_recommend = '快速推荐',

@@ -4,12 +4,14 @@ import {
   transformYears,
   getFormUtcToLocalMoment,
   getFromNowString,
+  transformTimeToUtc,
   orgMoment as moment
 } from '@belloai/moment'
 
 import {
   CHANNEL_MAPS,
   SCHOOL_TYPES,
+  GAIN_WAY_MAP,
   getAllImportFilterOptions
 } from '../config/basic-data'
 
@@ -440,6 +442,148 @@ export const getChannelName = (resume: Record<string, any>) => {
     name = importType
   }
   return name
+}
+
+export const getOperateInfoChannel = (resume: Record<string, any>) => {
+  // 默认拿history最后一位为默认值，如果没有则去取外层的
+  const { import_history } = resume
+  const { length } = import_history || []
+  let lastHistory
+  if (length) {
+    lastHistory = import_history[length - 1]
+  }
+  const { import_type, source_channel, gain_way } = lastHistory || resume
+
+  const channelName = getChannelName({ import_type, source_channel })
+  const sourceName = CHANNEL_MAPS[source_channel] || ''
+  const gainWayName = GAIN_WAY_MAP[gain_way] || ''
+
+  const { label: importType = '未知方式' } =
+    getAllImportFilterOptions().find(
+      ({ postValue }) => postValue === import_type
+    ) || {}
+
+  const strArr: string[] = []
+
+  if (
+    [
+      'user.plugin',
+      'wechat.helper',
+      'wechat.consultant',
+      'user.email',
+      'xclient.resume_deliver',
+      'user.upload'
+    ].includes(import_type)
+  ) {
+    channelName && strArr.push(channelName)
+  }
+  sourceName && channelName !== sourceName && strArr.push(sourceName)
+  gainWayName && strArr.push(gainWayName)
+  strArr.push(importType)
+
+  return strArr.join(' ')
+}
+
+export const getDefResumeExtra = resume => {
+  const { _risks: doubt, _advantages: advantages, downloadUrl } = resume || {}
+  return {
+    doubt,
+    advantages,
+    downloadUrl
+  }
+}
+
+export const getShowEmployments = resume => {
+  const {
+    employments = [],
+    last_company: lastCompany,
+    last_job_title: lastJobTitle
+  } = resume || {}
+
+  if (employments.length === 0) {
+    if (lastCompany || lastJobTitle) {
+      employments.push({
+        company_name: lastCompany,
+        title: lastJobTitle,
+        start_date_fm: '未知日期范围'
+      })
+    }
+  }
+  return employments
+}
+
+export const getShowEducations = resume => {
+  const {
+    educations = [],
+    last_school: lastSchool,
+    last_major: lastMajor
+  } = resume
+  if (educations.length === 0) {
+    if (lastSchool || lastMajor) {
+      educations.push({
+        showTitle: lastSchool || lastMajor,
+        school_name: lastSchool,
+        major: lastMajor,
+        start_date_fm: '未知日期范围'
+      })
+    }
+  } else {
+    educations.forEach(item => {
+      const { school_name: schoolName, degree, major } = item
+      item.showEduData = [schoolName, degree, major].filter(i => i)
+    })
+  }
+
+  return educations
+}
+
+export const getResumeActiveTimeEnum = () => [
+  {
+    label: '所有时间',
+    value: ''
+  },
+  {
+    label: '刚刚活跃',
+    value: transformTimeToUtc(moment().subtract(3, 'hour'))
+  },
+  {
+    label: '今日活跃',
+    value: transformTimeToUtc(moment().subtract(1, 'days'))
+  },
+  {
+    label: '3日内活跃',
+    value: transformTimeToUtc(moment().subtract(3, 'days'))
+  },
+  {
+    label: '1周内活跃',
+    value: transformTimeToUtc(moment().subtract(1, 'weeks'))
+  },
+  {
+    label: '2周内活跃',
+    value: transformTimeToUtc(moment().subtract(2, 'weeks'))
+  },
+  {
+    label: '3周内活跃',
+    value: transformTimeToUtc(moment().subtract(3, 'weeks'))
+  },
+  {
+    label: '1个月内活跃',
+    value: transformTimeToUtc(moment().subtract(1, 'months'))
+  }
+]
+
+export const getResumeActiveTime = (resume: any) => {
+  const { resume_active_time } = resume || {}
+  if (!resume_active_time) {
+    return ''
+  }
+
+  const activeTime = moment(resume_active_time).format()
+  return (
+    getResumeActiveTimeEnum().find(({ value }) => {
+      return value && activeTime >= value
+    })?.label || ''
+  )
 }
 
 export const getResumeUpdateFromNow = (resume: Record<string, any>) => {

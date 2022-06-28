@@ -1,115 +1,19 @@
 import {
   getBirthday,
   getChannelName,
-  getContactInfo,
   getIsNew,
   getLockParams,
-  getOperateInfoChannel,
-  getResumeActiveTime,
-  getResumeDimensionsParams,
   getShowLock,
   getWorkYear,
   resumeFixAge,
   exportUrl,
   isWomen,
   isMan,
-  getName
+  getDefName
 } from '../resume'
 import { orgMoment as moment, transformTimeToUtc } from '@belloai/moment'
 
 describe('src/utils/transform/resume', () => {
-  it('getContactInfo', () => {
-    expect(JSON.stringify(getContactInfo({}))).toBe(
-      JSON.stringify({ phones: [], emails: [], isHideContactInfo: false })
-    )
-
-    expect(JSON.stringify(getContactInfo({ phone: 'phone' }))).toBe(
-      JSON.stringify({
-        phones: ['phone'],
-        phone: 'phone',
-        emails: [],
-        isHideContactInfo: false
-      })
-    )
-
-    expect(JSON.stringify(getContactInfo({ email: 'email' }))).toBe(
-      JSON.stringify({
-        phones: [],
-        emails: ['email'],
-        email: 'email',
-        isHideContactInfo: false
-      })
-    )
-
-    expect(JSON.stringify(getContactInfo({ email: 'email已隐藏' }))).toBe(
-      JSON.stringify({
-        phones: [],
-        emails: ['email已隐藏'],
-        email: 'email已隐藏',
-        isHideContactInfo: true
-      })
-    )
-
-    expect(JSON.stringify(getContactInfo({ phone: 'phone已隐藏' }))).toBe(
-      JSON.stringify({
-        phones: ['phone已隐藏'],
-        phone: 'phone已隐藏',
-        emails: [],
-        isHideContactInfo: true
-      })
-    )
-
-    expect(JSON.stringify(getContactInfo({ wechat: 'wechat已隐藏' }))).toBe(
-      JSON.stringify({
-        phones: [],
-        emails: [],
-        isHideContactInfo: true
-      })
-    )
-    expect(JSON.stringify(getContactInfo({ qq: 'qq已隐藏' }))).toBe(
-      JSON.stringify({
-        phones: [],
-        emails: [],
-        isHideContactInfo: true
-      })
-    )
-    expect(JSON.stringify(getContactInfo({ weibo: 'qq已隐藏' }))).toBe(
-      JSON.stringify({
-        phones: [],
-        emails: [],
-        isHideContactInfo: true
-      })
-    )
-    expect(JSON.stringify(getContactInfo({ github: 'qq已隐藏' }))).toBe(
-      JSON.stringify({
-        phones: [],
-        emails: [],
-        isHideContactInfo: true
-      })
-    )
-    expect(JSON.stringify(getContactInfo({ website: 'qq已隐藏' }))).toBe(
-      JSON.stringify({
-        phones: [],
-        emails: [],
-        isHideContactInfo: true
-      })
-    )
-    expect(JSON.stringify(getContactInfo({ linked_in: 'qq已隐藏' }))).toBe(
-      JSON.stringify({
-        phones: [],
-        emails: [],
-        isHideContactInfo: true
-      })
-    )
-    expect(JSON.stringify(getContactInfo({ personal_url: 'qq已隐藏' }))).toBe(
-      JSON.stringify({
-        phones: [],
-        emails: [],
-        isHideContactInfo: true
-      })
-    )
-  })
-
   it('getChannelName', () => {
     expect(getChannelName({})).toBe('企业人才库')
     expect(getChannelName({ import_type: 'user.xiaobei' })).toBe('小倍优选入库')
@@ -148,77 +52,8 @@ describe('src/utils/transform/resume', () => {
 
     expect(getChannelName({ import_type: 'user.manual' })).toBe('主动上传')
   })
-  it('getOperateInfoChannel', () => {
-    expect(getOperateInfoChannel({})).toBe('未知方式')
-
-    expect(getOperateInfoChannel({ import_type: 'user.upload' })).toBe(
-      '简历上传'
-    )
-    expect(getOperateInfoChannel({ import_type: 'user.manual' })).toBe(
-      '手动创建'
-    )
-    expect(getOperateInfoChannel({ import_type: 'user.plugin' })).toBe(
-      '插件入库'
-    )
-    expect(
-      getOperateInfoChannel({ import_type: 'xclient.resume_deliver' })
-    ).toBe('投递简历插件入库')
-    expect(getOperateInfoChannel({ import_type: 'user.email' })).toBe(
-      '邮箱入库'
-    )
-    expect(getOperateInfoChannel({ import_type: 'wechat.helper' })).toBe(
-      '小程序投递'
-    )
-    expect(getOperateInfoChannel({ import_type: 'wechat.consultant' })).toBe(
-      '小程序导入'
-    )
-    expect(getOperateInfoChannel({ import_type: 'user.xiaobei' })).toBe(
-      '小倍优选入库'
-    )
-    expect(getOperateInfoChannel({ import_type: 'user.accept_referral' })).toBe(
-      '推荐入库'
-    )
-
-    expect(
-      getOperateInfoChannel({
-        import_type: 'user.plugin',
-        source_channel: 'lagou'
-      })
-    ).toBe('拉勾 插件入库')
-    expect(
-      getOperateInfoChannel({
-        import_type: 'xclient.resume_deliver',
-        source_channel: 'lagou'
-      })
-    ).toBe('拉勾 投递简历插件入库')
-    expect(
-      getOperateInfoChannel({
-        import_type: 'wechat.helper',
-        source_channel: 'lagou'
-      })
-    ).toBe('拉勾 小程序投递')
-    expect(
-      getOperateInfoChannel({
-        import_type: 'wechat.consultant',
-        source_channel: 'lagou'
-      })
-    ).toBe('拉勾 小程序导入')
-    expect(
-      getOperateInfoChannel({
-        import_type: 'user.email',
-        source_channel: 'lagou'
-      })
-    ).toBe('拉勾 邮箱入库')
-  })
 
   it('getLockParams', () => {
-    expect(JSON.stringify(getLockParams(undefined))).toBe(
-      JSON.stringify({
-        showLock: false,
-        lockRecruitingId: undefined
-      })
-    )
-
     expect(
       JSON.stringify(
         getLockParams({
@@ -255,7 +90,6 @@ describe('src/utils/transform/resume', () => {
   })
 
   it('getShowLock', () => {
-    expect(getShowLock(undefined)).toBe(false)
     expect(getShowLock({})).toBe(false)
     expect(getShowLock({ lock: {} })).toBe(false)
     expect(getShowLock({ lock: { unlock_date: '' } })).toBe(false)
@@ -363,8 +197,6 @@ describe('src/utils/transform/resume', () => {
   })
 
   it('getIsNew', () => {
-    expect(getIsNew(undefined)).toBeUndefined()
-
     const test = { created_at: '2021-10-01T00:00:00' }
     expect(getIsNew(test)).toBe(false)
 
@@ -373,82 +205,7 @@ describe('src/utils/transform/resume', () => {
       getIsNew(test1, transformTimeToUtc(moment(test1.created_at).add(-1, 'd')))
     ).toBe(true)
   })
-  it('getResumeDimensionsParams', () => {
-    expect(JSON.stringify(getResumeDimensionsParams(true, 'resume'))).toBe(
-      JSON.stringify({
-        entity: 'potrait_analysis_distribution_hr_code_list',
-        parent: 'potrait_analysis_distribution_hr_code_list__resume'
-      })
-    )
-    expect(JSON.stringify(getResumeDimensionsParams(false, 'resume'))).toBe(
-      JSON.stringify({
-        entity: 'potrait_analysis_distribution_hh_code_list',
-        parent: 'potrait_analysis_distribution_hh_code_list__resume'
-      })
-    )
-    expect(JSON.stringify(getResumeDimensionsParams(true, 'candidate'))).toBe(
-      JSON.stringify({
-        entity: 'potrait_analysis_distribution_hr_code_list',
-        parent: 'potrait_analysis_distribution_hr_code_list__candidate'
-      })
-    )
-    expect(JSON.stringify(getResumeDimensionsParams(false, 'candidate'))).toBe(
-      JSON.stringify({
-        entity: 'potrait_analysis_distribution_hh_code_list',
-        parent: 'potrait_analysis_distribution_hh_code_list__candidate'
-      })
-    )
-  })
-  it('getResumeActiveTime', () => {
-    expect(getResumeActiveTime({})).toBe('')
-    expect(
-      getResumeActiveTime({
-        resume_active_time: transformTimeToUtc(new Date())
-      })
-    ).toBe('刚刚活跃')
 
-    expect(
-      getResumeActiveTime({
-        resume_active_time: transformTimeToUtc(moment().add(-23, 'hours'))
-      })
-    ).toBe('今日活跃')
-
-    expect(
-      getResumeActiveTime({
-        resume_active_time: transformTimeToUtc(moment().add(-3, 'day'))
-      })
-    ).toBe('3日内活跃')
-
-    expect(
-      getResumeActiveTime({
-        resume_active_time: transformTimeToUtc(moment().add(-5, 'day'))
-      })
-    ).toBe('1周内活跃')
-
-    expect(
-      getResumeActiveTime({
-        resume_active_time: transformTimeToUtc(moment().add(-7, 'day'))
-      })
-    ).toBe('1周内活跃')
-
-    expect(
-      getResumeActiveTime({
-        resume_active_time: transformTimeToUtc(moment().add(-2, 'weeks'))
-      })
-    ).toBe('2周内活跃')
-
-    expect(
-      getResumeActiveTime({
-        resume_active_time: transformTimeToUtc(moment().add(-21, 'day'))
-      })
-    ).toBe('3周内活跃')
-
-    expect(
-      getResumeActiveTime({
-        resume_active_time: transformTimeToUtc(moment().add(-1, 'year'))
-      })
-    ).toBe('')
-  })
   it('exportUrl', () => {
     expect(exportUrl('a', 'b')).toBe('b/a/export')
   })
@@ -462,82 +219,41 @@ describe('src/utils/transform/resume', () => {
     expect(isMan({ gender: '女' })).toBe(false)
     expect(isMan({ gender: '' })).toBe(false)
   })
-  it('getName', () => {
+  it('getDefName', () => {
     expect(
-      getName(
-        {
-          name: 'b',
-          surname: 'c'
-        },
-        { candidate_name: 'a' }
-      )
-    ).toBe('a')
-    expect(
-      getName(
-        {
-          name: 'b',
-          surname: 'c'
-        },
-        { candidate_name: '' }
-      )
+      getDefName({
+        name: 'b',
+        surname: 'c'
+      })
     ).toBe('b')
+
     expect(
-      getName(
-        {
-          name: 'b',
-          surname: 'c'
-        },
-        {}
-      )
-    ).toBe('b')
-    expect(
-      getName(
-        {
-          name: 'b',
-          surname: 'c'
-        },
-        null
-      )
-    ).toBe('b')
-    expect(
-      getName(
-        {
-          name: '',
-          surname: 'c',
-          gender: '男'
-        },
-        null
-      )
+      getDefName({
+        name: '',
+        surname: 'c',
+        gender: '男'
+      })
     ).toBe('c先生')
     expect(
-      getName(
-        {
-          name: '',
-          surname: 'c',
-          gender: '女'
-        },
-        null
-      )
+      getDefName({
+        name: '',
+        surname: 'c',
+        gender: '女'
+      })
     ).toBe('c女士')
     expect(
-      getName(
-        {
-          name: '',
-          surname: 'c',
-          gender: ''
-        },
-        null
-      )
+      getDefName({
+        name: '',
+        surname: 'c',
+        gender: ''
+      })
     ).toBe('c**')
     expect(
-      getName(
-        {
-          name: '',
-          surname: '',
-          gender: ''
-        },
-        null
-      )
+      getDefName({
+        name: '',
+        surname: '',
+        gender: ''
+      })
     ).toBe('匿名')
   })
 })

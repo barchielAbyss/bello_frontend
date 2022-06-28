@@ -1,134 +1,25 @@
-import { cloneDeep, isString } from 'lodash'
+import { isString } from 'lodash'
 import {
   transformDateYM,
   transformYears,
   getFormUtcToLocalMoment,
   getFromNowString,
-  orgMoment as moment,
-  transformTimeToUtc,
-  transformUtcToLocal
+  orgMoment as moment
 } from '@belloai/moment'
 
 import {
   CHANNEL_MAPS,
-  GAIN_WAY_MAP,
   SCHOOL_TYPES,
   getAllImportFilterOptions
 } from '../config/basic-data'
 
-import { getArrAndFirstParams, getIdForApi, strArrClean } from '../utils'
+import { getArrAndFirstParams, getIdForApi } from '../utils'
 
-export interface Action {
-  name: string
-  order_index: number
-  cancel_abort?: boolean
-  recruitingID: string
-  should_change?: boolean
-  actionFunc?: string
-  to_state_flow_stage?: Stage
-  operation_params_schema?: any
-}
-
-interface Stage {
-  id: string
-  changeActionList?: Action[]
-  unchangeActionList?: Action[]
-}
-
-export interface RecruitingModel {
-  id: string
-  is_abort: boolean
-  is_archived: boolean
-  stage: Stage
-}
-
-export interface ResumeModel {
-  type: string
-  atsShow: boolean
-
-  downloadUrl?: string
-  defaultAvatar?: any
-  disabledAvatar?: any
-  weepAvatar?: any
-  smileAvatar?: any
-
-  start_year_of_employment_count?: string
-  start_year_of_employment?: any
-
-  order?: any
-  age?: number
-  birthday?: any
-
-  showBuy?: boolean
-  chudianPanel?: boolean
-
-  name?: string
-  round?: number
-  employments?: any[]
-  secondary_employments?: any[]
-  projects?: any[]
-  educations?: any[]
-  trainings?: any[]
-  progress?: any[]
-  virtual_phone?: string | any
-  expired_at_text?: string
-  resume_no?: string
-
-  _tags?: Tag[]
-  isEdit?: boolean
-  isDownload?: boolean
-
-  skills_props?: any[]
-  credentials?: any[]
-
-  description?: string
-  isNextInterview?: boolean
-  source_id?: string
-  channelName?: string
-  resumeUpdateFromNow?: string
-  updateFromNow?: string
-  createdFromNow?: string
-  suspect_similar?: any[]
-
-  yearOfWorkExperience?: string
-
-  isNew?: boolean
-
-  extraUserInfoList?: any[]
-
-  showLock?: boolean
-  lockRecruitingId?: string
-
-  isHideContactInfo: boolean
-  phones?: string[]
-  phone?: string
-  emails?: string[]
-  email?: string
-
-  resumeId?: string
-  resume_id: string
-  recruitings?: RecruitingModel[]
-  candidateId?: string
-  originRecruitings?: []
-}
-
-export const getSocialNetworksKeys = () => {
-  return [
-    'wechat',
-    'qq',
-    'weibo',
-    'github',
-    'website',
-    'linked_in',
-    'personal_url'
-  ]
-}
-export const LevelImgMap = {
-  level_1: require('../assets/images/level_1.png'),
-  level_2: require('../assets/images/level_2.png')
-}
-
-export const resumeFixAge = resume => {
+/**
+ * 修复age参数
+ * @param resume resume对象
+ */
+export const resumeFixAge = (resume: Record<string, any>) => {
   if (isString(resume.age)) {
     const { age: ageStr } = resume
     const age = parseInt(ageStr, 10)
@@ -142,7 +33,13 @@ export const resumeFixAge = resume => {
   return resume
 }
 
-export const getWorkYear = (resume, round = true) => {
+/**
+ * 工作年限
+ * @param resume
+ * @param round 是否四舍五入
+ * @returns
+ */
+export const getWorkYear = (resume: Record<string, any>, round = true) => {
   const { year_of_work_experience, start_year_of_employment } = resume
   let workYear = year_of_work_experience
   if (start_year_of_employment) {
@@ -156,19 +53,25 @@ export const getWorkYear = (resume, round = true) => {
   return workYear
 }
 
+/**
+ * 拼接export链接
+ * @param id
+ * @param source
+ * @returns
+ */
 export const exportUrl = (id, source) => {
   return `${source}/${id}/export`
 }
 
-export const isWomen = resume => resume.gender === '女'
-export const isMan = resume => resume.gender === '男'
+export const isWomen = (resume: Record<string, any>) => resume.gender === '女'
+export const isMan = (resume: Record<string, any>) => resume.gender === '男'
 
-export const getName = (resume, order) => {
-  const { candidate_name } = order || {}
-  if (candidate_name) {
-    return candidate_name
-  }
-
+/**
+ * 默认取名方式
+ * @param resume
+ * @returns
+ */
+export const getDefName = (resume: Record<string, any>) => {
   const { name, surname } = resume
 
   let returnName = name
@@ -185,38 +88,23 @@ export const getName = (resume, order) => {
   return returnName
 }
 
-export const getAvatars = resume => {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  let defaultAvatar = require('../assets/images/icon_spec_default_avat.png')
-  let disabledAvatar = true
-  let weepAvatar
-  let smileAvatar
-  if (isWomen(resume)) {
-    defaultAvatar = require('../assets/images/woman-avatar-motion.gif') // 4s
-    weepAvatar = require('../assets/images/woman-avatar-motion-cry.gif') // 2s
-    smileAvatar = require('../assets/images/woman-avatar-motion-smile.gif') // 1s
-    disabledAvatar = false
-  } else if (isMan(resume)) {
-    defaultAvatar = require('../assets/images/man-avatar-motion.gif') // 2s
-    weepAvatar = require('../assets/images/man-avatar-motion-weep.gif') // 2s
-    smileAvatar = require('../assets/images/man-avatar-motion-smile.gif') // 2s
-    disabledAvatar = false
-  }
-  return {
-    defaultAvatar,
-    disabledAvatar,
-    weepAvatar,
-    smileAvatar
-  }
-}
-
-export const getRound = resume => {
+/**
+ * 轮次
+ * @param resume
+ * @returns
+ */
+export const getRound = (resume: Record<string, any>) => {
   const { latest_interview } = resume
   const { round = 0 } = latest_interview || {}
   return round
 }
 
-export const getAge = resume => {
+/**
+ * 获取岁数
+ * @param resume
+ * @returns
+ */
+export const getAge = (resume: Record<string, any>) => {
   const { birthday, age } = resume
 
   let returnAge = age
@@ -226,7 +114,12 @@ export const getAge = resume => {
   return returnAge
 }
 
-export const getBirthday = resume => {
+/**
+ * 获取生日
+ * @param resume
+ * @returns
+ */
+export const getBirthday = (resume: Record<string, any>) => {
   const { birthday } = resume
 
   if (birthday) {
@@ -240,7 +133,12 @@ export const getBirthday = resume => {
   return {}
 }
 
-export const getStartYearOfEmployment = resume => {
+/**
+ * 获取开始工作时间
+ * @param resume
+ * @returns
+ */
+export const getStartYearOfEmployment = (resume: Record<string, any>) => {
   let { start_year_of_employment } = resume
   let start_year_of_employment_count = ''
   if (start_year_of_employment) {
@@ -258,7 +156,12 @@ export const getStartYearOfEmployment = resume => {
   }
 }
 
-export const getYearOfWorkExperience = resume => {
+/**
+ * 获取工作年限
+ * @param resume
+ * @returns
+ */
+export const getYearOfWorkExperience = (resume: Record<string, any>) => {
   let yearOfWorkExperience = '暂无经验'
   const workYear = getWorkYear(resume, false)
   if (workYear > 0 && workYear < 1) {
@@ -268,26 +171,6 @@ export const getYearOfWorkExperience = resume => {
   }
 
   return yearOfWorkExperience
-}
-
-export const isOsrResume = resume => {
-  const { type } = resume || {}
-  return type === 'PRIVATE'
-}
-
-export const getDownloadUrl = (resume, type) => {
-  const { id } = resume
-  let downloadUrl = exportUrl(resume.id, 'cloud_resume')
-  if (type === 'CANDIDATE') {
-    downloadUrl = exportUrl(id, 'osr_candidate')
-  } else if (isOsrResume({ type })) {
-    downloadUrl = exportUrl(id, 'osr_resume')
-  } else if (type === 'THIRDPARTY') {
-    downloadUrl = exportUrl(id, 'third_party_resume')
-  } else if (type === 'PLUGIN') {
-    downloadUrl = ''
-  }
-  return downloadUrl
 }
 
 export const transfromDate = (item, format = 'YYYY.MM') => {
@@ -319,37 +202,35 @@ export const transfromDate = (item, format = 'YYYY.MM') => {
   }
 }
 
-export const getEmployments = resume => {
+export const getEmploymentsInfo = (employ: any[]) => {
+  return (employ || []).map(item => {
+    const { company_name, company_desc, description } = item
+    return {
+      ...item,
+      ...transfromDate(item),
+      company_name: company_name || '未知公司',
+      company_desc: (company_desc || '').trim(),
+      description: (description || '').trim()
+    }
+  })
+}
+/**
+ * 工作信息
+ * @param resume
+ * @returns
+ */
+export const getEmployments = (resume: Record<string, any>) => {
   const { employments } = resume
 
-  return (employments || []).map(item => {
-    const { company_name, company_desc, description } = item
-    return {
-      ...item,
-      ...transfromDate(item),
-      company_name: company_name || '未知公司',
-      company_desc: (company_desc || '').trim(),
-      description: (description || '').trim()
-    }
-  })
+  return getEmploymentsInfo(employments)
 }
 
-export const getSecondaryEmployments = resume => {
+export const getSecondaryEmployments = (resume: Record<string, any>) => {
   const { secondary_employments } = resume
-
-  return (secondary_employments || []).map(item => {
-    const { company_name, company_desc, description } = item
-    return {
-      ...item,
-      ...transfromDate(item),
-      company_name: company_name || '未知公司',
-      company_desc: (company_desc || '').trim(),
-      description: (description || '').trim()
-    }
-  })
+  return getEmploymentsInfo(secondary_employments)
 }
 
-export const getProjects = resume => {
+export const getProjects = (resume: Record<string, any>) => {
   const { projects } = resume
 
   return (projects || []).map(item => {
@@ -362,7 +243,7 @@ export const getProjects = resume => {
   })
 }
 
-export const getEducations = resume => {
+export const getEducations = (resume: Record<string, any>) => {
   const { educations } = resume
 
   return (educations || []).map(item => {
@@ -375,7 +256,7 @@ export const getEducations = resume => {
   })
 }
 
-export const getTrainings = resume => {
+export const getTrainings = (resume: Record<string, any>) => {
   const { trainings } = resume
 
   return (trainings || []).map(item => {
@@ -386,53 +267,13 @@ export const getTrainings = resume => {
   })
 }
 
-export const getOrder = (resume, order) => {
-  const { order: resumeOrder, my_order } = resume
-  let myOrder
-  if (
-    (!resumeOrder || typeof resumeOrder === 'string') &&
-    (my_order || order)
-  ) {
-    myOrder = my_order || order
-  }
-
-  if (myOrder) {
-    const { refund_time } = myOrder
-    return {
-      ...myOrder,
-      refund_time: transformUtcToLocal(refund_time, 'YYYY.MM.DD')
-    }
-  }
-
-  return myOrder
-}
-
-export const getProgress = (resume, order) => {
+export const getDefProgress = (resume: Record<string, any>) => {
   const { progress } = resume
-  const { progress: orderProgress } = order || {}
 
-  const orderProgressMap = {
-    init: 1,
-    to_contact: 2,
-    confirmed: 3,
-    called: 4,
-    refunded: 5
-  }
-
-  return progress || orderProgressMap[orderProgress] || ''
+  return progress || ''
 }
 
-export const getVirtualPhone = (resume, order) => {
-  const { virtual_phone } = resume
-  const { virtual_phone: orderVirtualPhone } = order || {}
-
-  // TODO 需要整理分开 resume 的 virtual_phone 是字符串（插件入库）or 对象的情况（订单相关）
-  if (virtual_phone && isString(virtual_phone) && !orderVirtualPhone) {
-    return virtual_phone
-  }
-
-  const virtualPhone = virtual_phone || orderVirtualPhone
-
+export const getDefVirtualPhone = virtualPhone => {
   if (virtualPhone) {
     const { expired_at } = virtualPhone
     const expiredAt = getFormUtcToLocalMoment(expired_at)
@@ -456,7 +297,7 @@ interface Tag {
   name: string
 }
 
-export const getTags = resume => {
+export const getTags = (resume: Record<string, any>) => {
   const { _tags } = resume
   const industry: Tag[] = []
   const other: Tag[] = []
@@ -494,23 +335,7 @@ export const getTags = resume => {
   return [...other, ...industry]
 }
 
-export const getIsEdit = (resuem, type, order) => {
-  const { category } = resuem
-  let isEdit = false
-  if (['CANDIDATE', 'PRIVATE'].includes(type)) {
-    if (category === 2 || order) {
-      isEdit = true
-    }
-  }
-
-  return isEdit
-}
-
-export const getIsDownload = type => {
-  return type !== 'PLUGIN'
-}
-
-export const getSkillsProps = resume => {
+export const getSkillsProps = (resume: Record<string, any>) => {
   const { skills_props } = resume
 
   if (Array.isArray(skills_props)) {
@@ -539,7 +364,7 @@ export const getSkillsProps = resume => {
   return skills_props
 }
 
-export const getCredentials = resume => {
+export const getCredentials = (resume: Record<string, any>) => {
   const { credentials } = resume
   if (Array.isArray(credentials)) {
     return credentials.filter(({ type, name }) => type || name)
@@ -547,15 +372,15 @@ export const getCredentials = resume => {
   return credentials
 }
 
-export const getDescription = resume => {
+export const getDescription = (resume: Record<string, any>) => {
   const { summary } = resume
 
   return (summary || '').trim()
 }
 
-export const getIsNextInterview = (resume, order) => {
+export const getDefIsNextInterview = (resume: Record<string, any>) => {
   const { category, phone } = resume
-  return !(category !== 2 && !phone && !getVirtualPhone(resume, order))
+  return category !== 2 && !phone
 }
 
 export const getResumeId = resume => {
@@ -571,7 +396,7 @@ export const getResumeId = resume => {
   }
 }
 
-export const getSourceId = resume => {
+export const getSourceId = (resume: Record<string, any>) => {
   const { source_id, id, category } = resume
   const resumeId = getIdForApi(resume, 'resume')
 
@@ -582,7 +407,7 @@ export const getSourceId = resume => {
 }
 
 // 转换渠道
-export const getChannelName = resume => {
+export const getChannelName = (resume: Record<string, any>) => {
   let name = ''
   const { import_type, source_channel } = resume
 
@@ -617,7 +442,7 @@ export const getChannelName = resume => {
   return name
 }
 
-export const getResumeUpdateFromNow = resume => {
+export const getResumeUpdateFromNow = (resume: Record<string, any>) => {
   const { resume_update_time, received_at, channel } = resume
 
   let resumeUpdateFromNow = resume_update_time // 处理邮箱简历更新时间
@@ -633,7 +458,7 @@ export const getResumeUpdateFromNow = resume => {
   return ''
 }
 
-export const getUpdateFromNow = resume => {
+export const getUpdateFromNow = (resume: Record<string, any>) => {
   const { updated_at } = resume
 
   if (updated_at) {
@@ -643,7 +468,7 @@ export const getUpdateFromNow = resume => {
   return ''
 }
 
-export const getCreatedFromNow = resume => {
+export const getCreatedFromNow = (resume: Record<string, any>) => {
   const { created_at } = resume
 
   if (created_at) {
@@ -653,32 +478,21 @@ export const getCreatedFromNow = resume => {
   return ''
 }
 
-export const getTypeData = type => {
-  // TODO 好似没有地方用到
-  if (type === 'PLUGIN') {
-    return {
-      showBuy: false,
-      chudianPanel: false
-    }
-  }
-  return {}
-}
-
-export const getSimilarResumes = resume => {
+export const getSimilarResumes = (resume: Record<string, any>) => {
   const { suspect_similar } = resume
 
   return (suspect_similar || []).filter(({ preview_url }) => !!preview_url)
 }
 
-export const getPhones = resume => {
+export const getPhones = (resume: Record<string, any>) => {
   return getArrAndFirstParams(resume, 'phones', 'phone')
 }
 
-export const getEmails = resume => {
+export const getEmails = (resume: Record<string, any>) => {
   return getArrAndFirstParams(resume, 'emails', 'email')
 }
 
-export const getIsNew = (resume, day?: string) => {
+export const getIsNew = (resume: Record<string, any>, day?: string) => {
   const { created_at } = resume || {}
   let isNew
   if (created_at) {
@@ -692,7 +506,7 @@ export const getIsNew = (resume, day?: string) => {
   return isNew
 }
 // 获取显示锁
-export const getShowLock = resume => {
+export const getShowLock = (resume: Record<string, any>) => {
   const { lock } = resume || {}
   const { unlock_date, created_at } = lock || {}
 
@@ -707,7 +521,7 @@ export const getShowLock = resume => {
   return showLock
 }
 
-export const getLockParams = resume => {
+export const getLockParams = (resume: Record<string, any>) => {
   const { lock } = resume || {}
   return {
     showLock: getShowLock(resume),
@@ -741,250 +555,11 @@ export const getOccupantInfo = item => {
   return infoList
 }
 
-export const getExtraUserInfoList = resume => {
+export const getExtraUserInfoList = (resume: Record<string, any>) => {
   const { extraUserInfoList } = resume
   if (extraUserInfoList) {
     return extraUserInfoList
   }
   const occupantInfo = getOccupantInfo(resume)
   return occupantInfo
-}
-
-export const getContactInfo = resume => {
-  const obj = {
-    ...getPhones(resume),
-    ...getEmails(resume)
-  }
-
-  const { phones, emails } = obj
-
-  const arr: string[] = [...(phones || []), ...(emails || [])]
-
-  getSocialNetworksKeys().forEach(key => {
-    const val = resume[key]
-    if (val) {
-      arr.push(val)
-    }
-  })
-
-  const [first] = strArrClean(arr)
-
-  const isHideContactInfo = (first || '').includes('已隐藏')
-
-  return {
-    ...obj,
-    isHideContactInfo
-  }
-}
-
-export const transformResume = (
-  temp = {},
-  type = 'PRIVATE',
-  order = null
-): ResumeModel => {
-  const res = cloneDeep(temp)
-  const myOrder = getOrder(res, order)
-
-  return {
-    ...res,
-    ...getAvatars(res), // 处理头像
-    ...getBirthday(res), // 出生日期
-    ...getStartYearOfEmployment(res), // 参加工作时间
-    ...getTypeData(type), // 处理插件简历
-    type,
-    atsShow: true, // 是否显示ats面板
-    order: myOrder, // 获取order
-    downloadUrl: getDownloadUrl(res, type), // 下载链接
-    name: getName(res, myOrder), // 姓名
-    round: getRound(res), // 获取面试轮次
-    employments: getEmployments(res), // 工作经历
-    secondary_employments: getSecondaryEmployments(res), // 实习经历
-    projects: getProjects(res), // 项目经历
-    educations: getEducations(res), // 教育经历
-    trainings: getTrainings(res), //培训经历
-    progress: getProgress(res, myOrder), // 流程状态
-    virtual_phone: getVirtualPhone(res, myOrder), //获取虚拟号码
-    _tags: getTags(res),
-    isEdit: getIsEdit(res, type, myOrder),
-    isDownload: getIsDownload(type),
-    skills_props: getSkillsProps(res), // 处理技能
-    credentials: getCredentials(res), // 处理证书
-    description: getDescription(res), // 处理自我评价
-    isNextInterview: getIsNextInterview(res, myOrder), // 是否可以进入面试
-    source_id: getSourceId(res), // 简历源id
-    channelName: getChannelName(res), // 处理渠道名字
-    resumeUpdateFromNow: getResumeUpdateFromNow(res), // 处理简历更新时间
-    updateFromNow: getUpdateFromNow(res),
-    createdFromNow: getCreatedFromNow(res),
-    suspect_similar: getSimilarResumes(res),
-    yearOfWorkExperience: getYearOfWorkExperience(res), //工作经验
-    isNew: getIsNew(res),
-    extraUserInfoList: getExtraUserInfoList(res),
-    ...getLockParams(res),
-    ...getContactInfo(res),
-    ...getResumeId(res)
-  }
-}
-
-export const getShowEmployments = resume => {
-  const {
-    employments = [],
-    last_company: lastCompany,
-    last_job_title: lastJobTitle
-  } = resume || {}
-
-  if (employments.length === 0) {
-    if (lastCompany || lastJobTitle) {
-      employments.push({
-        company_name: lastCompany,
-        title: lastJobTitle,
-        start_date_fm: '未知日期范围'
-      })
-    }
-  }
-  return employments
-}
-
-export const getShowEducations = resume => {
-  const {
-    educations = [],
-    last_school: lastSchool,
-    last_major: lastMajor
-  } = resume
-  if (educations.length === 0) {
-    if (lastSchool || lastMajor) {
-      educations.push({
-        showTitle: lastSchool || lastMajor,
-        school_name: lastSchool,
-        major: lastMajor,
-        start_date_fm: '未知日期范围'
-      })
-    }
-  } else {
-    educations.forEach(item => {
-      const { school_name: schoolName, degree, major } = item
-      item.showEduData = [schoolName, degree, major].filter(i => i)
-    })
-  }
-
-  return educations
-}
-
-export const getOperateInfoChannel = resume => {
-  // 默认拿history最后一位为默认值，如果没有则去取外层的
-  const { import_history } = resume
-  const { length } = import_history || []
-  let lastHistory
-  if (length) {
-    lastHistory = import_history[length - 1]
-  }
-  const { import_type, source_channel, gain_way } = lastHistory || resume
-
-  const channelName = getChannelName({ import_type, source_channel })
-  const sourceName = CHANNEL_MAPS[source_channel] || ''
-  const gainWayName = GAIN_WAY_MAP[gain_way] || ''
-
-  const { label: importType = '未知方式' } =
-    getAllImportFilterOptions().find(
-      ({ postValue }) => postValue === import_type
-    ) || {}
-
-  const strArr: string[] = []
-
-  if (
-    [
-      'user.plugin',
-      'wechat.helper',
-      'wechat.consultant',
-      'user.email',
-      'xclient.resume_deliver',
-      'user.upload'
-    ].includes(import_type)
-  ) {
-    channelName && strArr.push(channelName)
-  }
-  sourceName && channelName !== sourceName && strArr.push(sourceName)
-  gainWayName && strArr.push(gainWayName)
-  strArr.push(importType)
-
-  return strArr.join(' ')
-}
-
-export const getDefResumeExtra = resume => {
-  const { _risks: doubt, _advantages: advantages, downloadUrl } = resume || {}
-  return {
-    doubt,
-    advantages,
-    downloadUrl
-  }
-}
-export const getResumeDimensionsParams = (isHR, pageType) => {
-  const moduleParams = {
-    resume: {
-      entity: isHR
-        ? 'potrait_analysis_distribution_hr_code_list'
-        : 'potrait_analysis_distribution_hh_code_list',
-      parent: isHR
-        ? 'potrait_analysis_distribution_hr_code_list__resume'
-        : 'potrait_analysis_distribution_hh_code_list__resume'
-    },
-    candidate: {
-      entity: isHR
-        ? 'potrait_analysis_distribution_hr_code_list'
-        : 'potrait_analysis_distribution_hh_code_list',
-      parent: isHR
-        ? 'potrait_analysis_distribution_hr_code_list__candidate'
-        : 'potrait_analysis_distribution_hh_code_list__candidate'
-    }
-  }
-  return moduleParams[pageType]
-}
-
-export const getResumeActiveTimeEnum = () => [
-  {
-    label: '所有时间',
-    value: ''
-  },
-  {
-    label: '刚刚活跃',
-    value: transformTimeToUtc(moment().subtract(3, 'hour'))
-  },
-  {
-    label: '今日活跃',
-    value: transformTimeToUtc(moment().subtract(1, 'days'))
-  },
-  {
-    label: '3日内活跃',
-    value: transformTimeToUtc(moment().subtract(3, 'days'))
-  },
-  {
-    label: '1周内活跃',
-    value: transformTimeToUtc(moment().subtract(1, 'weeks'))
-  },
-  {
-    label: '2周内活跃',
-    value: transformTimeToUtc(moment().subtract(2, 'weeks'))
-  },
-  {
-    label: '3周内活跃',
-    value: transformTimeToUtc(moment().subtract(3, 'weeks'))
-  },
-  {
-    label: '1个月内活跃',
-    value: transformTimeToUtc(moment().subtract(1, 'months'))
-  }
-]
-
-export const getResumeActiveTime = (resume: any) => {
-  const { resume_active_time } = resume || {}
-  if (!resume_active_time) {
-    return ''
-  }
-
-  const activeTime = moment(resume_active_time).format()
-  return (
-    getResumeActiveTimeEnum().find(({ value }) => {
-      return value && activeTime >= value
-    })?.label || ''
-  )
 }

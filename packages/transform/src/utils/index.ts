@@ -27,6 +27,3 @@ export const getIdForApi = (obj, key) => {
 
   return id
 }
-
-export const strArrClean = (arr): string[] =>
-  arr.filter(i => i).filter((t, i, arr) => arr.indexOf(t) === i)

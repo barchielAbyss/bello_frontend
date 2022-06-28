@@ -48,11 +48,6 @@ export enum CHANNEL_MAPS {
   customer_recommend = '客户推荐',
   cold_call = 'Cold Call'
 }
-export enum GAIN_WAY_MAP {
-  delivery = '主动投递',
-  search = '主动搜索'
-}
-
 /**
  * 入库方式
  */

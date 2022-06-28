@@ -1,6 +1,6 @@
 {
   "name": "@belloai/transform",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "api 数据转组件用到的数据体",
   "keywords": [
     "Local",

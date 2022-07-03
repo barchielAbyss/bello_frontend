@@ -21,7 +21,9 @@ import { getArrAndFirstParams, getIdForApi } from '../utils'
  * 修复age参数
  * @param resume resume对象
  */
-export const resumeFixAge = (resume: Record<string, any>) => {
+export const resumeFixAge = (
+  resume: Record<string, any>
+): Record<string, any> => {
   if (isString(resume.age)) {
     const { age: ageStr } = resume
     const age = parseInt(ageStr, 10)
@@ -41,7 +43,10 @@ export const resumeFixAge = (resume: Record<string, any>) => {
  * @param round 是否四舍五入
  * @returns
  */
-export const getWorkYear = (resume: Record<string, any>, round = true) => {
+export const getWorkYear = (
+  resume: Record<string, any>,
+  round = true
+): number => {
   const { year_of_work_experience, start_year_of_employment } = resume
   let workYear = year_of_work_experience
   if (start_year_of_employment) {
@@ -61,19 +66,21 @@ export const getWorkYear = (resume: Record<string, any>, round = true) => {
  * @param source
  * @returns
  */
-export const exportUrl = (id, source) => {
+export const exportUrl = (id, source): string => {
   return `${source}/${id}/export`
 }
 
-export const isWomen = (resume: Record<string, any>) => resume.gender === '女'
-export const isMan = (resume: Record<string, any>) => resume.gender === '男'
+export const isWomen = (resume: Record<string, any>): boolean =>
+  resume.gender === '女'
+export const isMan = (resume: Record<string, any>): boolean =>
+  resume.gender === '男'
 
 /**
  * 默认取名方式
  * @param resume
  * @returns
  */
-export const getDefName = (resume: Record<string, any>) => {
+export const getDefName = (resume: Record<string, any>): string => {
   const { name, surname } = resume
 
   let returnName = name
@@ -95,7 +102,7 @@ export const getDefName = (resume: Record<string, any>) => {
  * @param resume
  * @returns
  */
-export const getRound = (resume: Record<string, any>) => {
+export const getRound = (resume: Record<string, any>): number => {
   const { latest_interview } = resume
   const { round = 0 } = latest_interview || {}
   return round
@@ -106,7 +113,7 @@ export const getRound = (resume: Record<string, any>) => {
  * @param resume
  * @returns
  */
-export const getAge = (resume: Record<string, any>) => {
+export const getAge = (resume: Record<string, any>): number => {
   const { birthday, age } = resume
 
   let returnAge = age
@@ -121,7 +128,11 @@ export const getAge = (resume: Record<string, any>) => {
  * @param resume
  * @returns
  */
-export const getBirthday = (resume: Record<string, any>) => {
+interface Birthday {
+  age?: number
+  birthday?: string
+}
+export const getBirthday = (resume: Record<string, any>): Birthday => {
   const { birthday } = resume
 
   if (birthday) {
@@ -135,12 +146,18 @@ export const getBirthday = (resume: Record<string, any>) => {
   return {}
 }
 
+interface Employments {
+  start_year_of_employment_count: string
+  start_year_of_employment: string
+}
 /**
  * 获取开始工作时间
  * @param resume
  * @returns
  */
-export const getStartYearOfEmployment = (resume: Record<string, any>) => {
+export const getStartYearOfEmployment = (
+  resume: Record<string, any>
+): Employments => {
   let { start_year_of_employment } = resume
   let start_year_of_employment_count = ''
   if (start_year_of_employment) {
@@ -163,7 +180,9 @@ export const getStartYearOfEmployment = (resume: Record<string, any>) => {
  * @param resume
  * @returns
  */
-export const getYearOfWorkExperience = (resume: Record<string, any>) => {
+export const getYearOfWorkExperience = (
+  resume: Record<string, any>
+): string => {
   let yearOfWorkExperience = '暂无经验'
   const workYear = getWorkYear(resume, false)
   if (workYear > 0 && workYear < 1) {
@@ -175,7 +194,12 @@ export const getYearOfWorkExperience = (resume: Record<string, any>) => {
   return yearOfWorkExperience
 }
 
-export const transfromDate = (item, format = 'YYYY.MM') => {
+interface TransfromDate {
+  start_date_fm: string
+  work_year: string | null
+  end_date_fm: string
+}
+export const transfromDate = (item, format = 'YYYY.MM'): TransfromDate => {
   const { start_date, end_date, to_present } = item
 
   let start_date_fm = ''
@@ -204,7 +228,16 @@ export const transfromDate = (item, format = 'YYYY.MM') => {
   }
 }
 
-export const getEmploymentsInfo = (employ: any[]) => {
+interface EmploymentsInfo {
+  start_date_fm: string
+  work_year: string | null
+  end_date_fm: string
+  company_name: string
+  company_desc: string
+  description: string
+  [key: string]: any
+}
+export const getEmploymentsInfo = (employ: any[]): EmploymentsInfo[] => {
   return (employ || []).map(item => {
     const { company_name, company_desc, description } = item
     return {
@@ -232,7 +265,14 @@ export const getSecondaryEmployments = (resume: Record<string, any>) => {
   return getEmploymentsInfo(secondary_employments)
 }
 
-export const getProjects = (resume: Record<string, any>) => {
+interface Projects {
+  start_date_fm: string
+  work_year: string | null
+  end_date_fm: string
+  description: string
+  [key: string]: any
+}
+export const getProjects = (resume: Record<string, any>): Projects => {
   const { projects } = resume
 
   return (projects || []).map(item => {
@@ -245,7 +285,14 @@ export const getProjects = (resume: Record<string, any>) => {
   })
 }
 
-export const getEducations = (resume: Record<string, any>) => {
+interface Educations {
+  start_date_fm: string
+  work_year: string | null
+  end_date_fm: string
+  schoolType: string
+  [key: string]: any
+}
+export const getEducations = (resume: Record<string, any>): Educations => {
   const { educations } = resume
 
   return (educations || []).map(item => {
@@ -258,7 +305,13 @@ export const getEducations = (resume: Record<string, any>) => {
   })
 }
 
-export const getTrainings = (resume: Record<string, any>) => {
+interface Trainings {
+  start_date_fm: string
+  work_year: string | null
+  end_date_fm: string
+  [key: string]: any
+}
+export const getTrainings = (resume: Record<string, any>): Trainings[] => {
   const { trainings } = resume
 
   return (trainings || []).map(item => {
@@ -269,7 +322,7 @@ export const getTrainings = (resume: Record<string, any>) => {
   })
 }
 
-export const getDefProgress = (resume: Record<string, any>) => {
+export const getDefProgress = (resume: Record<string, any>): string => {
   const { progress } = resume
 
   return progress || ''
@@ -444,7 +497,7 @@ export const getChannelName = (resume: Record<string, any>) => {
   return name
 }
 
-export const getOperateInfoChannel = (resume: Record<string, any>) => {
+export const getOperateInfoChannel = (resume: Record<string, any>): string => {
   // 默认拿history最后一位为默认值，如果没有则去取外层的
   const { import_history } = resume
   const { length } = import_history || []
@@ -493,7 +546,12 @@ export const getDefResumeExtra = resume => {
   }
 }
 
-export const getShowEmployments = resume => {
+interface employment {
+  company_name: string
+  title: string
+  start_date_fm: string
+}
+export const getShowEmployments = (resume): employment[] => {
   const {
     employments = [],
     last_company: lastCompany,
@@ -572,7 +630,7 @@ export const getResumeActiveTimeEnum = () => [
   }
 ]
 
-export const getResumeActiveTime = (resume: any) => {
+export const getResumeActiveTime = (resume: any): string => {
   const { resume_active_time } = resume || {}
   if (!resume_active_time) {
     return ''
@@ -586,7 +644,7 @@ export const getResumeActiveTime = (resume: any) => {
   )
 }
 
-export const getResumeUpdateFromNow = (resume: Record<string, any>) => {
+export const getResumeUpdateFromNow = (resume: Record<string, any>): string => {
   const { resume_update_time, received_at, channel } = resume
 
   let resumeUpdateFromNow = resume_update_time // 处理邮箱简历更新时间
@@ -602,7 +660,7 @@ export const getResumeUpdateFromNow = (resume: Record<string, any>) => {
   return ''
 }
 
-export const getUpdateFromNow = (resume: Record<string, any>) => {
+export const getUpdateFromNow = (resume: Record<string, any>): string => {
   const { updated_at } = resume
 
   if (updated_at) {
@@ -612,7 +670,7 @@ export const getUpdateFromNow = (resume: Record<string, any>) => {
   return ''
 }
 
-export const getCreatedFromNow = (resume: Record<string, any>) => {
+export const getCreatedFromNow = (resume: Record<string, any>): string => {
   const { created_at } = resume
 
   if (created_at) {
@@ -636,7 +694,10 @@ export const getEmails = (resume: Record<string, any>) => {
   return getArrAndFirstParams(resume, 'emails', 'email')
 }
 
-export const getIsNew = (resume: Record<string, any>, day?: string) => {
+export const getIsNew = (
+  resume: Record<string, any>,
+  day?: string
+): boolean => {
   const { created_at } = resume || {}
   let isNew
   if (created_at) {
@@ -650,7 +711,7 @@ export const getIsNew = (resume: Record<string, any>, day?: string) => {
   return isNew
 }
 // 获取显示锁
-export const getShowLock = (resume: Record<string, any>) => {
+export const getShowLock = (resume: Record<string, any>): boolean => {
   const { lock } = resume || {}
   const { unlock_date, created_at } = lock || {}
 
@@ -673,7 +734,7 @@ export const getLockParams = (resume: Record<string, any>) => {
   }
 }
 
-export const showOwner = item => {
+export const showOwner = (item): boolean => {
   // 如果是插件自动入库，并且没有联系方式，那么显示企业人才库
   const { phones, emails, auto_save } = item || {}
   return !(

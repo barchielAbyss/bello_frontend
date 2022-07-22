@@ -1,4 +1,4 @@
-import { isString } from 'lodash'
+import { isString, isFunction } from 'lodash'
 import {
   transformDateYM,
   transformYears,
@@ -46,7 +46,7 @@ export const resumeFixAge = (
 export const getWorkYear = (
   resume: Record<string, any>,
   round = true
-): number => {
+): number | string => {
   const { year_of_work_experience, start_year_of_employment } = resume
   let workYear = year_of_work_experience
   if (start_year_of_employment) {
@@ -272,7 +272,7 @@ interface Projects {
   description: string
   [key: string]: any
 }
-export const getProjects = (resume: Record<string, any>): Projects => {
+export const getProjects = (resume: Record<string, any>): Projects[] => {
   const { projects } = resume
 
   return (projects || []).map(item => {
@@ -292,7 +292,7 @@ interface Educations {
   schoolType: string
   [key: string]: any
 }
-export const getEducations = (resume: Record<string, any>): Educations => {
+export const getEducations = (resume: Record<string, any>): Educations[] => {
   const { educations } = resume
 
   return (educations || []).map(item => {
@@ -461,8 +461,14 @@ export const getSourceId = (resume: Record<string, any>) => {
   return resumeId || source_id || id
 }
 
-// 转换渠道
-export const getChannelName = (resume: Record<string, any>) => {
+export const getChannelName = (
+  resume: Record<string, any>,
+  getChannelsConfig?: () => any
+) => {
+  const channelsConfig = isFunction(getChannelsConfig)
+    ? getChannelsConfig()
+    : CHANNEL_MAPS
+
   let name = ''
   const { import_type, source_channel } = resume
 
@@ -481,7 +487,7 @@ export const getChannelName = (resume: Record<string, any>) => {
   ) {
     // 插件入库
     if (source_channel) {
-      const channelName = CHANNEL_MAPS[source_channel]
+      const channelName = channelsConfig?.[source_channel]
       if (channelName && channelName !== '其他') {
         name = channelName
       }
@@ -497,8 +503,15 @@ export const getChannelName = (resume: Record<string, any>) => {
   return name
 }
 
-export const getOperateInfoChannel = (resume: Record<string, any>): string => {
+// 转换渠道
+export const getOperateInfoChannel = (
+  resume: Record<string, any>,
+  getChannelsConfig?: () => any
+) => {
   // 默认拿history最后一位为默认值，如果没有则去取外层的
+  const channelsConfig = isFunction(getChannelsConfig)
+    ? getChannelsConfig()
+    : CHANNEL_MAPS
   const { import_history } = resume
   const { length } = import_history || []
   let lastHistory
@@ -507,8 +520,11 @@ export const getOperateInfoChannel = (resume: Record<string, any>): string => {
   }
   const { import_type, source_channel, gain_way } = lastHistory || resume
 
-  const channelName = getChannelName({ import_type, source_channel })
-  const sourceName = CHANNEL_MAPS[source_channel] || ''
+  const channelName = getChannelName(
+    { import_type, source_channel },
+    () => channelsConfig
+  )
+  const sourceName = channelsConfig?.[source_channel] || ''
   const gainWayName = GAIN_WAY_MAP[gain_way] || ''
 
   const { label: importType = '未知方式' } =

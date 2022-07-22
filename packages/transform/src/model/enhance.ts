@@ -1,5 +1,4 @@
 import { orgMoment } from '@belloai/moment'
-
 export const getEventDate = (item, _moment = orgMoment) => {
   const { event_date, year } = item || {}
 

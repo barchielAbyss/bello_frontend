@@ -85,7 +85,7 @@ export default class XiaobeiVersion {
         return
       }
       window.postMessage({ type: 'osr_inited' }, '*')
-    }, 200)
+    }, 100)
 
     window.addEventListener('message', this.fetchXClientVersion)
 
@@ -96,7 +96,7 @@ export default class XiaobeiVersion {
         this.checkVersion()
         window.removeEventListener('message', this.fetchXClientVersion)
       }
-    }, 3 * 1000)
+    }, 1.5 * 1000)
   }
   fetchXClientVersion = (event: MessageEvent): void => {
     const { data } = event || {}

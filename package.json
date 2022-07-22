@@ -172,5 +172,8 @@
   },
   "dependencies": {
     "localforage": "^1.10.0"
+  },
+  "volta": {
+    "node": "14.20.0"
   }
 }
